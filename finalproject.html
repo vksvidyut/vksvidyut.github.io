@@ -1,0 +1,162 @@
+<!Doctype html>
+<html>
+<head>
+<style>
+  svg {
+    border: 1px solid black;
+    background: white;
+  }
+ body {
+   background-color: purple;
+   color: green ;
+   text-align: center;
+   font-family: sans-serif;
+   font-weight: bold;
+   font-size: 20pt
+
+}
+.left {
+ text-align: left;
+}
+.right {
+ text-align: right;
+}
+.center {
+ margin: 0 auto;
+ display: block;
+}
+</style>
+
+
+</head>
+
+<body>
+<h1> A kind of Hard Game by Vid Suresh </h1>
+<p> Instructions: Use the A,S,W,D keys to move the black ball into the darkgreen area without the
+  blackball touching the yellow balls.</p>
+<button type="button" onclick="document.location.reload(true)">Reset</button>
+<svg class="center" width="1000" height="600">
+  <rect x="0" y="0" width="125" height="600" fill="blue"/>
+  <rect x="750" y="0" width="250" height="600" fill="darkgreen"/>
+  <circle id="me" cx="20"cy="300" r="20" fill="black"/>
+  <circle id="bot1" class="bot" cx="155"cy="20" r="30" fill="yellow"/>
+  <circle id="bot2" class="bot" cx="311"cy="20" r="30" fill="yellow"/>
+  <circle id="bot3" class="bot" cx="467"cy="20" r="30" fill="yellow"/>
+  <circle id="bot4" class="bot" cx="623" cy="20" r="30" fill="yellow"/>
+
+  <circle id="bot5" class="bot" cx="233"cy="580" r="30" fill="yellow"/>
+  <circle id="bot6" class="bot" cx="389" cy="580" r="30" fill="yellow"/>
+  <circle id="bot7" class="bot" cx="545" cy="580" r="30" fill="yellow"/>
+  <circle id="bot8" class="bot" cx="701" cy="580" r="30" fill="yellow"/>
+</svg>
+</body>
+
+<script>
+  /* Moves something by increment dx in the horizintak direction,
+     dy in the vertical
+  */
+
+  var isFalling = [true, true, true, false, false, false]
+  // var bot1Falling = true
+  // var bot2Falling = true
+  // var bot3Falling = true
+
+  window.addEventListener('keypress', handleKeypress);
+  var bots = Array.from(document.querySelectorAll('.bot'));
+  var botIds = bots.map(bot => bot.id);
+  var captureTimers = botIds.map((id, i) => setInterval(moveBotCircleY, 100, id, -genRnd(), i))
+  // setInterval(moveBotCircleY, 50, 'bot1', -12)
+
+  function collide(centerMe, centerBot) {
+    var x1 = centerMe.x
+    var y1=centerMe.y
+    var x2=centerBot.x
+    var y2=centerBot.y
+    return Math.sqrt(Math.pow(x2-x1, 2)+Math.pow(y2-y1, 2)) <= 50
+  }
+
+  function stop () {
+    // First, cancel all timers
+    captureTimers.forEach(t => clearInterval(t))
+  }
+  function handleKeypress(e) {
+    console.log("entered key press");
+    var whichKey = String.fromCharCode(e.charCode)
+    switch (whichKey) {
+      case 'a':
+        moveCircleX('me', -10)
+        break;
+      case 'd':
+        moveCircleX('me', 10)
+        break;
+      case'w':
+        moveCircleY('me', 10)
+        break;
+      case's':
+        moveCircleY('me',-10)
+        break;
+      default:
+    }
+  }
+
+  function moveCircleX(id, dx) {
+    var x_pos = document.querySelector(`#${id}`).cx.baseVal.value
+    if (x_pos >= 770) {
+      stop()
+      alert("You made it")
+    } else if (x_pos + dx > 0 && x_pos + dx < 1000) {
+      document.querySelector(`#${id}`).cx.baseVal.value += dx
+    }
+  }
+
+  function moveCircleY(id, dy) {
+    var y_pos = document.querySelector(`#${id}`).cy.baseVal.value
+    if (y_pos + -dy > 0 && y_pos + -dy < 600) {
+      document.querySelector(`#${id}`).cy.baseVal.value += -dy
+    }
+  }
+
+  // function moveBotCircleX(id, dx) {
+  //   var x_pos = document.querySelector(`#${id}`).cx.baseVal.value
+  //   if (x_pos + dx > 0 && x_pos + dx < 1000) {
+  //     document.querySelector(`#${id}`).cx.baseVal.value += dx
+  //   }
+  // }
+
+  function moveBotCircleY(id, dy, i) {
+    var y_pos = document.querySelector(`#${id}`).cy.baseVal.value
+    if (y_pos+30 + -dy > 600 && isFalling[i]) {
+      document.querySelector(`#${id}`).cy.baseVal.value += dy
+      isFalling[i] = !isFalling[i]
+    } else if (y_pos-30 + +dy < 0 && !isFalling[i]) {
+      document.querySelector(`#${id}`).cy.baseVal.value += dy
+      isFalling[i] = !isFalling[i]
+    } else if (isFalling[i]) {
+      document.querySelector(`#${id}`).cy.baseVal.value += -dy
+    } else if (!isFalling[i]) {
+      document.querySelector(`#${id}`).cy.baseVal.value += dy
+    }
+
+
+    var centerBot = {
+      x: document.querySelector(`#${id}`).cx.baseVal.value,
+      y: document.querySelector(`#${id}`).cy.baseVal.value,
+    }
+    var centerMe = {
+      x: document.querySelector(`#me`).cx.baseVal.value,
+      y: document.querySelector(`#me`).cy.baseVal.value,
+    }
+
+    if (collide(centerMe,centerBot)) {
+      stop()
+      window.removeEventListener('keypress', handleKeypress)
+      alert("Game Over")
+    }
+  }
+
+  function genRnd() {
+    return Math.floor((Math.random() * 15) + 12)
+  }
+
+</script>
+</html>
