@@ -1,2 +1,0 @@
-# vksvidyut.github.io
-Website
